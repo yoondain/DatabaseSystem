@@ -16,10 +16,10 @@ DatabaseSystem
 │  │  ├─ student1
 │  │  │  └─ meta_data.txt
 │  │  └─ test1
-│  ├─ project.py
-│  └─ stucture
-│     ├─ slottedpage.py
-│     └─ vlr.py
+│  ├─ stucture
+│  │  ├─ slottedpage.py
+│  │  └─ vlr.py
+│  └─ main.py
 └─ README.md
 
 ```
