@@ -19,6 +19,7 @@ def mapping(x):
 VLR : 최대 길이 40 bytes
 '''
 VLR_LENGTH = 40
+
 class VLR:
     def __init__(self, tableName, insert_columns):
         meta_data = dataDict()
@@ -26,48 +27,46 @@ class VLR:
         col_type = meta_data.colType # c인지 v인지
 
         '''
-        필요한 숫자 추출 ex) offset 시작 위치
+        # =========== null bitmap 에 들어갈 숫자 int 형으로 / null인지 아닌지 bool type의 list
+        '''
+        null_bitmap, tf = self.checkNull(insert_columns)
+        # print(tf)
+
+        '''
+        # =========== 필요한 숫자 추출 ex) offset 시작 위치 //null값 
         '''
         varstart = 1 # 바이트로 바꿔야함/ null byte 앞에 하나 있으므로
         numNeed = [0]
-        for coltype, insertcol in zip(col_type, insert_columns):
+        for coltype, insertcol, ttff in zip(col_type, insert_columns,tf):
+            if ttff == False: continue # null이면 pass
             if coltype[0] == 'c' :  varstart += int(coltype[1:])
             elif coltype[0] == 'v' : 
                 numNeed.append(len(insertcol))
                 varstart += OFFSET
         numNeed[0] =varstart
         total_length = sum(numNeed)
+        # print(total_length)
 
         '''
-        가변 길이와 vlr max 길이 비교
+        # =========== self init 할 byte를 totel_length 만큼 할당 
         '''
-        if total_length > VLR_LENGTH : 
-            print('out of range')
-            return False
-
-
-
-
         bitmap = bytearray(total_length)
-       
-        '''
-        null bitmap 
-        '''
-        null_bitmap, tf = self.checkNull(insert_columns)
         bitmap[0:1] = null_bitmap.to_bytes(1,'big')
-
-
+        
         '''
-        null bitmap 제외한 [1:] 정보 저장
+        # =========== null bitmap 제외한 [1:] 정보 저장
         '''
         numNeedNum = 1
         bit_start = 1
-        print('bitmap')
+        # print('bitmap')
 
 
-        ### null check 해야함
-        for coltype, insertcol in zip(col_type, insert_columns):
+        ### null check 해야함 --> 57번째의 tf 가지고
+        # print(f'bitmap length : {len(bitmap)}' )
+        for coltype, insertcol, ttff in zip(col_type, insert_columns , tf):
 
+            if ttff == False: continue # null 이면 아무것도 하지 말기
+                
             if coltype[0] == 'c' :
                 cvarlength = len(insertcol)
                 bitmap[bit_start : bit_start + cvarlength] = bytearray(insertcol, encoding='UTF-8')
@@ -76,6 +75,7 @@ class VLR:
             elif coltype[0] == 'v':
                 start = numNeed[0]
                 vvarlength = numNeed[numNeedNum]
+                print(vvarlength)
                 bitmap[bit_start : bit_start + OFFSET//2] =  start.to_bytes(2,'big') # 시작하는 곳
                 bitmap[bit_start + OFFSET//2 : bit_start + OFFSET] =  vvarlength.to_bytes(2,'big') # 변수 길이
                 # print(bitmap[bit_start:bit_start + OFFSET])
@@ -85,8 +85,8 @@ class VLR:
                 numNeed[0] += vvarlength
                 numNeedNum += 1
                 bit_start += OFFSET
-
-            print(coltype)
+            print(bitmap)
+            # print(coltype)
             
 
 
@@ -94,7 +94,7 @@ class VLR:
 
         
         # print(bitmap[0])
-        print(bitmap)
+        print(f'final bitmap: {bitmap}')
         # print(bitmap[0:1]) # null
 
         # print(bitmap[1:6].decode()) # id
@@ -143,7 +143,7 @@ SLP : 하나의 크기 1000bytes (approximately 10mb)
 '''
 SLP_LENGH = 1000
 class SLP:
-    def __init__(self):
+    def __init__(self,tableName: str, record : VLR):
         pass
 
 # ============================================================= # 
