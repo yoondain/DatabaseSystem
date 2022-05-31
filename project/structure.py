@@ -52,7 +52,6 @@ class VLR:
        
         '''
         null bitmap 
-        0번째 바이트는 null bitmap
         '''
         null_bitmap, tf = self.checkNull(insert_columns)
         bitmap[0:1] = null_bitmap.to_bytes(1,'big')
@@ -61,13 +60,12 @@ class VLR:
         '''
         null bitmap 제외한 [1:] 정보 저장
         '''
-        # print(col_type)
-        
-        # 1번째 byte는 null bitmap
-        # bitmap[0] = bytearray(0)
         numNeedNum = 1
         bit_start = 1
         print('bitmap')
+
+
+        ### null check 해야함
         for coltype, insertcol in zip(col_type, insert_columns):
 
             if coltype[0] == 'c' :
@@ -96,15 +94,16 @@ class VLR:
 
         
         # print(bitmap[0])
-        print(bitmap[0:1]) # null
+        print(bitmap)
+        # print(bitmap[0:1]) # null
 
-        print(bitmap[1:6].decode()) # id
-        print(bitmap[6:10]) # offset - name
-        print(bitmap[10:11].decode()) # grade
-        print(bitmap[11:15]) # offset - dept
+        # print(bitmap[1:6].decode()) # id
+        # print(bitmap[6:10]) # offset - name
+        # print(bitmap[10:11].decode()) # grade
+        # print(bitmap[11:15]) # offset - dept
 
-        print(bitmap[15:19].decode()) # name
-        print(bitmap[19:].decode()) # dept
+        # print(bitmap[15:19].decode()) # name
+        # print(bitmap[19:].decode()) # dept
         # print(bitmap)
         # a = bitmap.decode()
         # print(len(bitmap))
@@ -127,35 +126,12 @@ class VLR:
 
         bitmap_number = int("".join(null_bitmap_string ),2)
     
-
-        # byte로 바꾼거랑, [True, True, False, False] 두개 return 
+        # byte바꾸기 전 정수, null 값인지 [True, True, False, False] 두개 return 
         tf = null_bitmap_string[-len(insert_columns):]
         ptf = list(map(mapping, tf))
 
         return bitmap_number , ptf
 
-
-
-def checkNull(insert_columns):
-        null_bitmap_string = ['0','0','0','0','0','0','0','0']
-        for i,ins in enumerate(reversed(insert_columns)):
-            if ins == 'null': null_bitmap_string[7-i] = '1'
-            else: null_bitmap_string[7-i] = '0'
-
-        bitmap_number = int("".join(null_bitmap_string ),2)
-    
-
-        # byte로 바꾼거랑, [True, True, False, False] 두개 return 
-        print(null_bitmap_string)
-        tf = null_bitmap_string[-len(insert_columns):]
-        print(tf)
-        ptf = list(map(mapping, tf))
-        print(ptf)
-        for ttff in tf:
-            if ttff == '0' : ttff = False
-            else : ttff = True
-        print(tf)
-        return bitmap_number , tf
 
 
 
@@ -213,3 +189,23 @@ class dataDict():
             self.colType = f.readline().rstrip().split(sep="/")
             self.slotNum = f.readline().rstrip()
             self.slotNum = f.readline().rstrip()
+
+
+
+'''
+def checkNull(insert_columns):
+    null_bitmap_string = ['0','0','0','0','0','0','0','0']
+    for i,ins in enumerate(reversed(insert_columns)):
+        if ins == 'null': null_bitmap_string[7-i] = '1'
+        else: null_bitmap_string[7-i] = '0'
+
+    bitmap_number = int("".join(null_bitmap_string ),2)
+
+    # byte로 바꾼거랑, [True, True, False, False] 두개 return 
+    print(null_bitmap_string)
+    tf = null_bitmap_string[-len(insert_columns):]
+    print(tf)
+    ptf = list(map(mapping, tf))
+    print(bitmap_number,ptf)
+'''
+
