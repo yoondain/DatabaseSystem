@@ -156,39 +156,29 @@ class SLP:
         # print(f'bytemap : {bytemap[:10]}, length : {len(bytemap)}')
         bytemap[0:EACH_HEADER_SIZE] = (0).to_bytes(EACH_HEADER_SIZE, 'big') # record 개수는 0으로 초기화
         bytemap[EACH_HEADER_SIZE: EACH_HEADER_SIZE*2] = (10).to_bytes(EACH_HEADER_SIZE,'big') # free  space의 start
-        # print(f'bytemap : {bytemap[:10]}, length : {len(bytemap)}')
-        
         
         self.slp = bytemap
         self.recordNum = 0
         self.freespaceStart = 10 # 이게 10이라는 건 아무것도 없다는 것
         self.freespaceEnd = SLP_LENGTH 
         self.frespaceRemain = self.freespaceEnd - self.freespaceStart
-        
-        #print(type(self.slp))
-        # print(self.slp)
-        # print(self.slp)
-
+ 
     def getSLP(self, tableName : str, slotNum : int):
         directory = os.getcwd() + '/table/' + tableName
-        tempslp = SLP()#bytearray(EACH_HEADER_SIZE)
+        # tempslp = SLP()#bytearray(EACH_HEADER_SIZE)
         with open(directory + '/slot'+str(slotNum)+'.bin', 'rb') as f:
-            self.slp = bytearray(f.readline())
-            self.recordNum = int.from_bytes(tempslp.slp[0:EACH_HEADER_SIZE],'big')
-            self.freespaceStart = int.from_bytes(tempslp.slp[EACH_HEADER_SIZE:2*EACH_HEADER_SIZE],'big')
-            self.freespaceEnd = int(3)
-            self.frespaceRemain = self.freespaceEnd - self.freespaceStart
-
-
-    def getSLP(self, tableName:str, slotnum:int):
-        directory = os.getcwd() + '/table/' + tableName
-        with open(directory + '/slot'+str(slotnum)+'.bin', 'wb') as f:
-            self.slp = bytearray(f.readline())
-
-        self.recordNum = int.from_bytes(self.slp[:EACH_HEADER_SIZE],'big')
+            self.slp = bytearray(f.read())
+            #print(self.slp)
+        self.recordNum = int.from_bytes(self.slp[0:EACH_HEADER_SIZE],'big')
         self.freespaceStart = int.from_bytes(self.slp[EACH_HEADER_SIZE:2*EACH_HEADER_SIZE],'big')
+        self.freespaceEnd = int.from_bytes(self.slp[2*EACH_HEADER_SIZE * self.recordNum :2*EACH_HEADER_SIZE * self.recordNum + EACH_HEADER_SIZE],'big')
+        self.frespaceRemain = self.freespaceEnd - self.freespaceStart
 
-    
+    def printSLP(self):
+        print(f'record num : {self.recordNum}')
+        print(f'freespace start : {self.freespaceStart}')
+        print(f'freespace end : {self.freespaceEnd}')
+        print(f'freespace remain : {self.frespaceRemain}')
 
 
         
