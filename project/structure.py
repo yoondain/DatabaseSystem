@@ -1,6 +1,8 @@
 
 import os, sys
 
+from charset_normalizer import from_bytes
+
 
 
 
@@ -34,7 +36,7 @@ class VLR:
         '''
         # =========== 필요한 숫자 추출 ex) offset 시작 위치 //null값 
         '''
-        varstart = 1 # 바이트로 바꿔야함/ null byte 앞에 하나 있으므로
+        varstart = 1 
         numNeed = [0]
         for coltype, insertcol, ttff in zip(col_type, insert_columns,tf):
             if ttff == False: continue # null이면 pass
@@ -140,22 +142,72 @@ class VLR:
 '''
 SLP : 하나의 크기 1000bytes 
 '''
-SLP_LENGTH = 1000
-ENTRIES = 4
-HEADER = 20
+SLP_LENGTH = 100
+END_OF_SLP = 100
 
+EACH_HEADER_SIZE = 5
+# ENTRY_SIZE = 5
+# PAGE_SIZE = 1000
+# ----
 
 class SLP:
-    def __init__(self,tableName: str, record : VLR):
-        self.slp = bytearray(SLP_LENGTH)
-        pass
+    def __init__(self):
+        bytemap = bytearray(SLP_LENGTH)
+        # print(f'bytemap : {bytemap[:10]}, length : {len(bytemap)}')
+        bytemap[0:EACH_HEADER_SIZE] = (0).to_bytes(EACH_HEADER_SIZE, 'big') # record 개수는 0으로 초기화
+        bytemap[EACH_HEADER_SIZE: EACH_HEADER_SIZE*2] = (10).to_bytes(EACH_HEADER_SIZE,'big') # free  space의 start
+        # print(f'bytemap : {bytemap[:10]}, length : {len(bytemap)}')
+        
+        
+        self.slp = bytemap
+        self.recordNum = 0
+        self.freespaceStart = 10 # 이게 10이라는 건 아무것도 없다는 것
+        self.freespaceEnd = SLP_LENGTH 
+        self.frespaceRemain = self.freespaceEnd - self.freespaceStart
+        
+        #print(type(self.slp))
+        # print(self.slp)
+        # print(self.slp)
+
+    def getSLP(self, tableName : str, slotNum : int):
+        directory = os.getcwd() + '/table/' + tableName
+        tempslp = SLP()#bytearray(EACH_HEADER_SIZE)
+        with open(directory + '/slot'+str(slotNum)+'.bin', 'rb') as f:
+            self.slp = bytearray(f.readline())
+            self.recordNum = int.from_bytes(tempslp.slp[0:EACH_HEADER_SIZE],'big')
+            self.freespaceStart = int.from_bytes(tempslp.slp[EACH_HEADER_SIZE:2*EACH_HEADER_SIZE],'big')
+            self.freespaceEnd = int(3)
+            self.frespaceRemain = self.freespaceEnd - self.freespaceStart
+
+
+    def getSLP(self, tableName:str, slotnum:int):
+        directory = os.getcwd() + '/table/' + tableName
+        with open(directory + '/slot'+str(slotnum)+'.bin', 'wb') as f:
+            self.slp = bytearray(f.readline())
+
+        self.recordNum = int.from_bytes(self.slp[:EACH_HEADER_SIZE],'big')
+        self.freespaceStart = int.from_bytes(self.slp[EACH_HEADER_SIZE:2*EACH_HEADER_SIZE],'big')
+
+    
+
+
+        
+        
+
+    # def __init__(self,tableName: str, record : VLR):
+    #     self.slp = bytearray(SLP_LENGTH)
+        
+
+
+
+    #     pass
 
 # ============================================================= # 
 
 '''
 data dictionary 
 '''
-class dataDict():
+class dataDict:
     def __init__(self):
         self.tableName = ''
         self.colName = []
@@ -177,6 +229,8 @@ class dataDict():
             print(r'Error: Creating directory. ' +  directory)
             exit()
 
+        
+        # meta data write
         with open(directory + '/meta_data.txt', 'w+') as f:
             f.write(table_name+'\n')
             for i,n in enumerate(col_name):
@@ -188,9 +242,6 @@ class dataDict():
                 if q != len(col_type)-1: f.write('/')
             f.write('\n0') # total slot 개수
             f.write('\n0') # total record 개수
-
-
-
 
     def printDict(self):
         print(f'table name : {self.tableName}')
@@ -205,25 +256,23 @@ class dataDict():
             self.tableName = f.readline().rstrip()
             self.colName = f.readline().rstrip().split(sep="/")
             self.colType = f.readline().rstrip().split(sep="/")
-            self.slotNum = f.readline().rstrip()
-            self.slotNum = f.readline().rstrip()
+            self.slotNum = int(f.readline().rstrip())
+            self.recordNum = int(f.readline().rstrip())
 
-
-
-'''
-def checkNull(insert_columns):
-    null_bitmap_string = ['0','0','0','0','0','0','0','0']
-    for i,ins in enumerate(reversed(insert_columns)):
-        if ins == 'null': null_bitmap_string[7-i] = '1'
-        else: null_bitmap_string[7-i] = '0'
-
-    bitmap_number = int("".join(null_bitmap_string ),2)
-
-    # byte로 바꾼거랑, [True, True, False, False] 두개 return 
-    print(null_bitmap_string)
-    tf = null_bitmap_string[-len(insert_columns):]
-    print(tf)
-    ptf = list(map(mapping, tf))
-    print(bitmap_number,ptf)
-'''
-
+    def updateDict(self, tableName : str, updateSlot : bool, updateRecord:bool):
+        metadata = dataDict()
+        metadata.getDict(tableName)
+        directory = os.getcwd() + '/table/' + tableName
+        with open(directory + '/meta_data.txt', 'w+') as f:
+            f.write(tableName+'\n')
+            for i,n in enumerate(metadata.colName):
+                f.write(n)
+                if i != len(metadata.colName)-1: f.write('/')
+            f.write('\n')
+            for q,t in enumerate(metadata.colType):
+                f.write(t)
+                if q != len(metadata.colType)-1: f.write('/')
+            if updateSlot : f.write('\n'+str(metadata.slotNum+1))
+            else:  f.write('\n'+str(metadata.slotNum))
+            if updateRecord : f.write('\n'+str(metadata.recordNum+1))
+            else:  f.write('\n'+str(metadata.recordNum))

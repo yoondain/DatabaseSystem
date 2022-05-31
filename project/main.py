@@ -5,24 +5,42 @@ from structure import *
 
 if __name__ == '__main__':
     
-    col_names = ['ID','name','grade','dept']
-    col_types = ['c5','v8','c1','v10'] 
-    table_name = 'test2'
-    # createTable('test5',col_names,col_types )    
-    createTable(table_name,col_names,col_types ) 
-    # temp.makeDic(table_name, col_names, col_types)
-    temp = dataDict()
-    temp.getDict(table_name)
-    # temp.printDict()
-    #findColumn(table_name)
+    col_names = ['ID','name','grade','dept'] # age 추가할수도?
+    col_types = ['c8','v16','c1','v17']  # vlr 하나에 40bytes 이므로
+    table_name = 'test10'
+
+    # 기능 1
+    # createTable(table_name,col_names,col_types) 
 
 
+    # 기능 2
     '''
     insert into table_name
     values ('덕배', 2, 'db2', '010-1234-5678', '감기')
     '''
+    insert_columns = ['20194653', 'dain yoon', '4', 'computer science']
+    insertColumn(table_name, insert_columns)
+
+
+    # 기능 3
+    query = 'select name from student where name = \'dain\''
+    #findRecord(table_name, query)
+
+    # 기능 4
+    # col = findColumn(table_name)
+    # print(f'columns for \"{table_name}\" table are : {col}')
     
-    table_name = table_name
-    insert_columns = ['11111', 'dain', '4', 'comp sci']
-    tempvlr = VLR(table_name, insert_columns)
-    pass
+
+    # test #
+    #new = SLP()
+    #print(new.slp)
+    # new = SLP()
+    # with open('slot7.bin', 'wb+') as f:
+    #     f.write(new.slp)
+    #     #print(len(f.readlines()))
+        
+
+    # print(len(new.slp))
+    directory = os.getcwd() + '/table/' + table_name
+    with open(directory+'/slot1.bin', 'rb') as f:
+        print(f.read())
