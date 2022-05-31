@@ -8,35 +8,17 @@ from API import *
 하나의 talbe -> 하나의 folder
 '''
 def createTable(tableName:str, col_name : list, col_type:list):
-
-    # folder 만들 위치
-    directory = os.getcwd() + '/table/' + tableName
-    try:
-        
-        if not os.path.exists(directory):
-            # print('make')
-            os.makedirs(directory)
-        else:
-            pass
-            #print(f'\"{tableName}\" table already exists')
-            # exit()
-    except OSError:
-        print(r'Error: Creating directory. ' +  directory)
-        exit()
-
-    
     metadata = dataDict()
     metadata.makeDict(tableName,col_name, col_type)
-    pass
 
 # =====================================================
 
-def insertColumn(tableName:str, col_name : list, col_type:list):
-    newRecord = VLR()
+def insertColumn(tableName:str, col_name : list):
+    newRecord = VLR(tableName,col_name)
     pass
 
 # =====================================================
-def findRecord(query : str):
+def findRecord(tableName:str, query : str):
     pass
 
 

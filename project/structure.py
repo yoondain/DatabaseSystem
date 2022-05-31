@@ -1,10 +1,9 @@
 
 import os, sys
-from this import s
-from tkinter import OFF
-from bitstring import BitArray
-from matplotlib.colors import to_rgb
-from numpy import insert
+
+
+
+
 
 OFFSET = 4
 
@@ -61,7 +60,7 @@ class VLR:
         # print('bitmap')
 
 
-        ### null check 해야함 --> 57번째의 tf 가지고
+        ### null check 해야함 --> return 된 tf bool 리스트가지고
         # print(f'bitmap length : {len(bitmap)}' )
         for coltype, insertcol, ttff in zip(col_type, insert_columns , tf):
 
@@ -139,11 +138,16 @@ class VLR:
 
 # ============================================================= # 
 '''
-SLP : 하나의 크기 1000bytes (approximately 10mb)
+SLP : 하나의 크기 1000bytes 
 '''
-SLP_LENGH = 1000
+SLP_LENGTH = 1000
+ENTRIES = 4
+HEADER = 20
+
+
 class SLP:
     def __init__(self,tableName: str, record : VLR):
+        self.slp = bytearray(SLP_LENGTH)
         pass
 
 # ============================================================= # 
@@ -161,6 +165,17 @@ class dataDict():
 
     def makeDict(self, table_name:str, col_name: list, col_type:list):
         directory = os.getcwd() + '/table/' + table_name
+        try:
+            if not os.path.exists(directory):
+                # print('make')
+                os.makedirs(directory)
+            else:
+                pass
+                #print(f'\"{tableName}\" table already exists')
+                # exit()
+        except OSError:
+            print(r'Error: Creating directory. ' +  directory)
+            exit()
 
         with open(directory + '/meta_data.txt', 'w+') as f:
             f.write(table_name+'\n')
@@ -173,6 +188,9 @@ class dataDict():
                 if q != len(col_type)-1: f.write('/')
             f.write('\n0') # total slot 개수
             f.write('\n0') # total record 개수
+
+
+
 
     def printDict(self):
         print(f'table name : {self.tableName}')
