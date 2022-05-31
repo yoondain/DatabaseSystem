@@ -1,11 +1,18 @@
 
 import os, sys
+from this import s
 from tkinter import OFF
 from bitstring import BitArray
+from matplotlib.colors import to_rgb
 from numpy import insert
 
 OFFSET = 4
 
+
+def mapping(x):
+    # null 이 아니면 0
+    if x == '0' : return True
+    else: return False
 
 # ============================================================= # 
 '''
@@ -18,7 +25,9 @@ class VLR:
         meta_data.getDict(tableName)
         col_type = meta_data.colType # c인지 v인지
 
-        # 가변 길이 record 시작 위치
+        '''
+        필요한 숫자 추출 ex) offset 시작 위치
+        '''
         varstart = 1 # 바이트로 바꿔야함/ null byte 앞에 하나 있으므로
         numNeed = [0]
         for coltype, insertcol in zip(col_type, insert_columns):
@@ -28,28 +37,42 @@ class VLR:
                 varstart += OFFSET
         numNeed[0] =varstart
         total_length = sum(numNeed)
-        # print(total_length)
 
+        '''
+        가변 길이와 vlr max 길이 비교
+        '''
         if total_length > VLR_LENGTH : 
             print('out of range')
             return False
 
 
 
-        # print(col_type)
+
         bitmap = bytearray(total_length)
+       
+        '''
+        null bitmap 
+        0번째 바이트는 null bitmap
+        '''
+        null_bitmap, tf = self.checkNull(insert_columns)
+        bitmap[0:1] = null_bitmap.to_bytes(1,'big')
+
+
+        '''
+        null bitmap 제외한 [1:] 정보 저장
+        '''
+        # print(col_type)
+        
         # 1번째 byte는 null bitmap
         # bitmap[0] = bytearray(0)
         numNeedNum = 1
         bit_start = 1
         print('bitmap')
         for coltype, insertcol in zip(col_type, insert_columns):
+
             if coltype[0] == 'c' :
-                cvarlength = len(insertcol) # 5
-                print(insertcol, end = '/')
-                # print(len(insertcol.encode()))
+                cvarlength = len(insertcol)
                 bitmap[bit_start : bit_start + cvarlength] = bytearray(insertcol, encoding='UTF-8')
-                # print(bitmap[bit_start : bit_start + varlength])
                 bit_start += cvarlength
 
             elif coltype[0] == 'v':
@@ -59,12 +82,7 @@ class VLR:
                 bitmap[bit_start + OFFSET//2 : bit_start + OFFSET] =  vvarlength.to_bytes(2,'big') # 변수 길이
                 # print(bitmap[bit_start:bit_start + OFFSET])
 
-
-                bitmap[start : start+ vvarlength] = bytearray(insertcol, encoding='UTF-8')
-
-
-
-
+                bitmap[start : start+ vvarlength] = bytearray(insertcol, encoding='UTF-8') # 뒤쪽에 정보 저장
 
                 numNeed[0] += vvarlength
                 numNeedNum += 1
@@ -76,25 +94,17 @@ class VLR:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-        self.vlr = bitmap
+        
         # print(bitmap[0])
-        print(bitmap[1:6])
-        print(bitmap[6:10])
-        print(bitmap[10:11])
-        print(bitmap[11:15])
-        print(bitmap[15:19])
-        print(bitmap[19:27])
+        print(bitmap[0:1]) # null
+
+        print(bitmap[1:6].decode()) # id
+        print(bitmap[6:10]) # offset - name
+        print(bitmap[10:11].decode()) # grade
+        print(bitmap[11:15]) # offset - dept
+
+        print(bitmap[15:19].decode()) # name
+        print(bitmap[19:].decode()) # dept
         # print(bitmap)
         # a = bitmap.decode()
         # print(len(bitmap))
@@ -102,13 +112,50 @@ class VLR:
 
         # print(insert_columns)
         # print(col_type)
-        
-        
 
 
 
+        self.vlr = bitmap # 이 bitmap으로 초기화
 
 
+    # ============================================       
+    def checkNull(self, insert_columns):
+        null_bitmap_string = ['0','0','0','0','0','0','0','0']
+        for i,ins in enumerate(reversed(insert_columns)):
+            if ins == 'null': null_bitmap_string[7-i] = '1'
+            else: null_bitmap_string[7-i] = '0'
+
+        bitmap_number = int("".join(null_bitmap_string ),2)
+    
+
+        # byte로 바꾼거랑, [True, True, False, False] 두개 return 
+        tf = null_bitmap_string[-len(insert_columns):]
+        ptf = list(map(mapping, tf))
+
+        return bitmap_number , ptf
+
+
+
+def checkNull(insert_columns):
+        null_bitmap_string = ['0','0','0','0','0','0','0','0']
+        for i,ins in enumerate(reversed(insert_columns)):
+            if ins == 'null': null_bitmap_string[7-i] = '1'
+            else: null_bitmap_string[7-i] = '0'
+
+        bitmap_number = int("".join(null_bitmap_string ),2)
+    
+
+        # byte로 바꾼거랑, [True, True, False, False] 두개 return 
+        print(null_bitmap_string)
+        tf = null_bitmap_string[-len(insert_columns):]
+        print(tf)
+        ptf = list(map(mapping, tf))
+        print(ptf)
+        for ttff in tf:
+            if ttff == '0' : ttff = False
+            else : ttff = True
+        print(tf)
+        return bitmap_number , tf
 
 
 
