@@ -85,10 +85,17 @@ def findRecord(select : str, tableName : str,  where : str):
     metadata.getDict(tableName)
     result_vlr = []
     if metadata.slotNum == 0 : return result_vlr
+    if select not in metadata.colName : return result_vlr
     
-    for slot_num in range(metadata.slotNum):
+    for slot_num in range(1,metadata.slotNum+1):
         tempslp = SLP()
-        tempslp.getSLP(tableName, slot_num)
+        tempslp.getSLP(tableName, slot_num) # slot 불러오기
+        for i in range(1,tempslp.recordNum+1):
+            recordStartPoint = int.from_bytes(tempslp.slp[ (2* EACH_HEADER_SIZE) * i : (2* EACH_HEADER_SIZE) * i + EACH_HEADER_SIZE],'big')
+            recordLength = int.from_bytes(tempslp.slp[ (2* EACH_HEADER_SIZE) * i + EACH_HEADER_SIZE: (2* EACH_HEADER_SIZE) * i + EACH_HEADER_SIZE+ EACH_HEADER_SIZE],'big')
+            record = tempslp.slp[recordStartPoint:recordStartPoint+recordLength]
+            print(f'\'{i}\'th record : {record}')
+
 
 
         pass
