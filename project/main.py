@@ -1,3 +1,4 @@
+from imghdr import tests
 import os, sys
 from API import *
 from structure import *
@@ -10,7 +11,7 @@ if __name__ == '__main__':
     table_name = 'test10'
 
     # 기능 1
-    # createTable(table_name,col_names,col_types) 
+    createTable(table_name,col_names,col_types) 
 
 
     # 기능 2
@@ -18,8 +19,11 @@ if __name__ == '__main__':
     insert into table_name
     values ('덕배', 2, 'db2', '010-1234-5678', '감기')
     '''
-    insert_columns = ['20194653', 'dain yoon', '4', 'computer science']
+    insert_columns = ['20194653', 'dain', '4', 'comp sci']
     insertColumn(table_name, insert_columns)
+    insert_columns = ['20192019', 'yoon', '1', 'null']
+    insertColumn(table_name, insert_columns)
+    #testvlr = VLR(table_name,insert_columns)
 
 
     # 기능 3
@@ -40,7 +44,9 @@ if __name__ == '__main__':
     #     #print(len(f.readlines()))
         
 
-    # print(len(new.slp))
+    testslp = SLP()
     directory = os.getcwd() + '/table/' + table_name
-    with open(directory+'/slot1.bin', 'rb') as f:
-        print(f.read())
+    # with open(directory+'/slot1.bin', 'rb') as f:
+    #     print(bytearray(f.read())  )
+    testslp.getSLP(table_name,1)
+    testslp.printSLP()

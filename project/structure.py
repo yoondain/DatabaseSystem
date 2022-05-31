@@ -76,7 +76,7 @@ class VLR:
             elif coltype[0] == 'v':
                 start = numNeed[0]
                 vvarlength = numNeed[numNeedNum]
-                print(vvarlength)
+                # print(vvarlength)
                 bitmap[bit_start : bit_start + OFFSET//2] =  start.to_bytes(2,'big') # 시작하는 곳
                 bitmap[bit_start + OFFSET//2 : bit_start + OFFSET] =  vvarlength.to_bytes(2,'big') # 변수 길이
                 # print(bitmap[bit_start:bit_start + OFFSET])
@@ -86,7 +86,7 @@ class VLR:
                 numNeed[0] += vvarlength
                 numNeedNum += 1
                 bit_start += OFFSET
-            print(bitmap)
+            # print(bitmap)
             # print(coltype)
             
 
@@ -95,7 +95,7 @@ class VLR:
 
         
         # print(bitmap[0])
-        print(f'final bitmap: {bitmap}')
+        print(f'final bitmap: {bitmap} bitmap length : {len(bitmap)}')
         # print(bitmap[0:1]) # null
 
         # print(bitmap[1:6].decode()) # id
@@ -145,7 +145,7 @@ SLP : 하나의 크기 1000bytes
 SLP_LENGTH = 100
 END_OF_SLP = 100
 
-EACH_HEADER_SIZE = 5
+EACH_HEADER_SIZE = 2
 # ENTRY_SIZE = 5
 # PAGE_SIZE = 1000
 # ----
