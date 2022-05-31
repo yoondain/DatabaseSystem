@@ -1,0 +1,3 @@
+student2
+ID/name/grade/dept/
+char(5)/varchar(80)/char(1)/varchar(100)/0

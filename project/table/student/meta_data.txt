@@ -1,0 +1,5 @@
+student
+ID/char(5) 
+name/varchar(80) 
+grade/char(5) 
+dept/varchar(80) 

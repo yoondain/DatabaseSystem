@@ -23,3 +23,12 @@ DatabaseSystem
 └─ README.md
 
 ```
+
+기능 1
+create table : txt로 받기
+기능2
+insert column : txt로
+기능3
+sql query (select from where) : argv
+기능4
+search column
