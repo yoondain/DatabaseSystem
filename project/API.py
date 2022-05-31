@@ -1,4 +1,4 @@
-from turtle import update
+from matplotlib.pyplot import table
 from structure import *
 
 # =====================================================
@@ -23,11 +23,11 @@ def insertColumn(tableName:str, col_name : list):
     newslp = SLP()
     newSLotNum = 0
 
-    if slotnum == 0 :
+    if slotnum == 0 : # slot 아무것도 존재하지 않을 때
         newSLotNum = 1
         # 개수 update
         newslp.slp[0:EACH_HEADER_SIZE] = (1).to_bytes(EACH_HEADER_SIZE, 'big') # record 개수 1개가 됨
-        # start of freespace UODATE
+        # start of freespace UPDATE
         newslp.slp[EACH_HEADER_SIZE: EACH_HEADER_SIZE*2] = (EACH_HEADER_SIZE * 4).to_bytes(EACH_HEADER_SIZE,'big') # free space 시작
         # 새로운 record 삽입
         newslp.slp[-len(record.vlr):] = record.vlr # newslp.slp[newslp.freespaceEnd-len(record.vlr):newslp.freespaceEnd] = record.vlr
@@ -38,22 +38,21 @@ def insertColumn(tableName:str, col_name : list):
         newslp.slp[EACH_HEADER_SIZE*3 : EACH_HEADER_SIZE*4] = (len(record.vlr)).to_bytes(EACH_HEADER_SIZE,'big')
         updateSlot = True
         updateRecord = True
-        
 
-            
-
-    else:
+    else: # 하나라도 있을 때
         newslp.getSLP(tableName, slotnum) # 가장 마지막에 있는 slot 가져온다
         if newslp.frespaceRemain < len(record.vlr):
             newSLotNum = slotnum + 1
-            #새로 만들어야함
+            '''
+            ☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆slot 새로 만들어야함 그리고 삽입☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆
+            '''
             pass
         else:
             newSLotNum = slotnum 
             # 개수 update done
             newslp.slp[0:EACH_HEADER_SIZE] = (newslp.recordNum+1).to_bytes(EACH_HEADER_SIZE, 'big') # record 개수 + 1 해서 저장
             # start of freespace UPDATE done
-            newslp.slp[EACH_HEADER_SIZE: EACH_HEADER_SIZE*2] = (2 * EACH_HEADER_SIZE * (newslp.recordNum + 1 ) ).to_bytes(EACH_HEADER_SIZE,'big') # free space 시작
+            newslp.slp[EACH_HEADER_SIZE: EACH_HEADER_SIZE*2] = ( 2 * EACH_HEADER_SIZE * (newslp.recordNum + 2 ) ).to_bytes(EACH_HEADER_SIZE,'big') # free space 시작
 
 
 
@@ -74,25 +73,26 @@ def insertColumn(tableName:str, col_name : list):
 
         pass
    
-
     print(f'newly updated slp : {newslp.slp}')
     with open(directory + '/slot' + str(newSLotNum)+ '.bin', 'wb+') as f:
         f.write(newslp.slp)
 
-    metadata.updateDict(tableName, updateSlot, updateRecord )
-
-
-
-
-    # 
-    # newRecord = VLR(tableName,col_name)
-    # newslp.insertRec(tableName, newRecord.vlr)
-
+    metadata.updateDict(tableName, updateSlot, updateRecord ) # meta data update
 
 # =====================================================
-def findRecord(tableName:str, query : str):
+def findRecord(select : str, tableName : str,  where : str):
     metadata = dataDict()
     metadata.getDict(tableName)
+    result_vlr = []
+    if metadata.slotNum == 0 : return result_vlr
+    
+    for slot_num in range(metadata.slotNum):
+        tempslp = SLP()
+        tempslp.getSLP(tableName, slot_num)
+
+
+        pass
+
 
 
 # =====================================================

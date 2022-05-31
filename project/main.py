@@ -13,16 +13,31 @@ if __name__ == '__main__':
     # 기능 1
     createTable(table_name,col_names,col_types) 
 
-
+    testslp = SLP()
+    directory = os.getcwd() + '/table/' + table_name
+    # with open(directory+'/slot1.bin', 'rb') as f:
+    #     print(bytearray(f.read())  )
+    
     # 기능 2
     '''
     insert into table_name
     values ('덕배', 2, 'db2', '010-1234-5678', '감기')
     '''
-    insert_columns = ['20194653', 'dain', '4', 'comp sci']
+    insert_columns = ['20194653', 'dain', '4', 'sci']
     insertColumn(table_name, insert_columns)
-    insert_columns = ['20192019', 'yoon', '1', 'null']
+    testslp.getSLP(table_name,1)
+    testslp.printSLP()
+    print('\n')
+    insert_columns = ['20192019', 'yoon', '1', 'bio']
     insertColumn(table_name, insert_columns)
+    testslp.getSLP(table_name,1)
+    testslp.printSLP()
+    print('\n')
+    insert_columns = ['11112019', 'YDI', '1', 'hel']
+    insertColumn(table_name, insert_columns)
+    testslp.getSLP(table_name,1)
+    testslp.printSLP()
+    print('\n')
     #testvlr = VLR(table_name,insert_columns)
 
 
@@ -44,9 +59,7 @@ if __name__ == '__main__':
     #     #print(len(f.readlines()))
         
 
-    testslp = SLP()
-    directory = os.getcwd() + '/table/' + table_name
-    # with open(directory+'/slot1.bin', 'rb') as f:
-    #     print(bytearray(f.read())  )
-    testslp.getSLP(table_name,1)
-    testslp.printSLP()
+    res = findRecord(select = 'name', tableName = table_name,  where = 'grade = 4')
+    if (len(res) == 0) : print('no query')
+
+    
