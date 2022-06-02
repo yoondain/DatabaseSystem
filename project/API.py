@@ -21,13 +21,15 @@ def insertColumn(tableName:str, col_name : list):
 
     updateSlot = False
     updateRecord = False
-    newslp = SLP()
+    
     newSLotNum = 0
 
-    if slotnum == 0 : # slot 아무것도 존재하지 않을 때
+    if slotnum == 0 : # 해당 table에 slot이 아예 존재하지 않을 때 -> 새로 1개를 만들어야 한다
         newSLotNum = 1
+        # slp 초기화
+        newslp = SLP()
         # 개수 update
-        newslp.slp[0:EACH_HEADER_SIZE] = (1).to_bytes(EACH_HEADER_SIZE, 'big') # record 개수 1개가 됨
+        newslp.slp[0:EACH_HEADER_SIZE] = (1).to_bytes(EACH_HEADER_SIZE, 'big') # 해당 slp의 record 개수 1개가 됨
         # start of freespace UPDATE
         newslp.slp[EACH_HEADER_SIZE: EACH_HEADER_SIZE*2] = (EACH_HEADER_SIZE * 4).to_bytes(EACH_HEADER_SIZE,'big') # free space 시작
         # 새로운 record 삽입
@@ -37,16 +39,33 @@ def insertColumn(tableName:str, col_name : list):
         newslp.slp[EACH_HEADER_SIZE*2 : EACH_HEADER_SIZE*3] = (newslp.freespaceEnd).to_bytes(EACH_HEADER_SIZE,'big')
         # 삽입한 record의 offset - length 알려줌
         newslp.slp[EACH_HEADER_SIZE*3 : EACH_HEADER_SIZE*4] = (len(record.vlr)).to_bytes(EACH_HEADER_SIZE,'big')
+        
         updateSlot = True
         updateRecord = True
 
     else: # 하나라도 있을 때
+        
         newslp.getSLP(tableName, slotnum) # 가장 마지막에 있는 slot 가져온다
-        if newslp.frespaceRemain < len(record.vlr):
+        if newslp.frespaceRemain < len(record.vlr): # 길이 부족하면
             newSLotNum = slotnum + 1
             '''
             ☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆slot 새로 만들어야함 그리고 삽입☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆
             '''
+            # slp 초기화
+            newslp = SLP()
+            # 개수 update
+            newslp.slp[0:EACH_HEADER_SIZE] = (1).to_bytes(EACH_HEADER_SIZE, 'big') # 새로 만든 slp의 record 개수 1개가 됨
+            # start of freespace UPDATE
+            newslp.slp[EACH_HEADER_SIZE: EACH_HEADER_SIZE*2] = (EACH_HEADER_SIZE * 4).to_bytes(EACH_HEADER_SIZE,'big') # free space 시작
+            # 새로운 record 삽입
+            newslp.slp[-len(record.vlr):] = record.vlr # newslp.slp[newslp.freespaceEnd-len(record.vlr):newslp.freespaceEnd] = record.vlr
+            # 삽입한 record의 offset - 시작위치 알려주는
+            newslp.freespaceEnd -= len(record.vlr)
+            newslp.slp[EACH_HEADER_SIZE*2 : EACH_HEADER_SIZE*3] = (newslp.freespaceEnd).to_bytes(EACH_HEADER_SIZE,'big')
+            # 삽입한 record의 offset - length 알려줌
+            newslp.slp[EACH_HEADER_SIZE*3 : EACH_HEADER_SIZE*4] = (len(record.vlr)).to_bytes(EACH_HEADER_SIZE,'big')
+            updateSlot = True
+            updateRecord = True
             pass
         else:
             newSLotNum = slotnum 
@@ -81,7 +100,6 @@ def insertColumn(tableName:str, col_name : list):
     metadata.updateDict(tableName, updateSlot, updateRecord ) # meta data update
 
 # =====================================================
-#   findRecord(select = 'name', tableName = table_name,  where = 'grade', target = '1')
 def findRecord(select : str, tableName : str,  where  : str, target : str):
     print(where, target)
     metadata = dataDict()
@@ -142,11 +160,6 @@ def findRecord(select : str, tableName : str,  where  : str, target : str):
     print(f'record 개수 : {len(result_vlr)} , {result_vlr}')           
     return result_vlr
             
-
-
-
-
-
 # =====================================================
 def findColumn(tableName: str):
     meta_data = dataDict()

@@ -1,12 +1,7 @@
 
-import os, sys
-from tkinter import OFF
-
-from numpy import byte, record
-
+import os
 
 OFFSET = 4
-
 
 def mapping(x):
     # null 이 아니면 0
@@ -32,7 +27,6 @@ class VLR:
         self.value = []
 
         print('make new VLR')
-        
 
     def makeVLR(self, tableName, insert_columns): # table이랑 insert colum이랑 
         meta_data = dataDict()
@@ -141,24 +135,14 @@ class VLR:
         null_int = int.from_bytes(bytes[0:1],'big') 
         null_check_str = ('{0:08b}'.format(null_int))[-len(metadata.colType):] # 길이가 8인 스트링 
         self.nullbitmap = null_check_str
-        # null_check = ('{0:08b}'.format(null_int))[len(null_check_str) - len(metadata.colType) + col_index]
-        #print(null_check_str)
-        #print(f'null check : {null_check}')
         self.isNotNull = list(map(mapping, null_check_str))
-        #print(self.isNotNull)
-        
-        # value 에 대응하는 값을 넣으면 됨
-        
-        # self.printVLR()
+
 
         '''
         vlr의 byte array와 null 정보로 value를 string으로 가져오기
         '''
         record_pointer = 1 # null부터 시작
         
-        #value_index = 0 
-
-        print(self.vlr)
         for coltype, ttff in zip(self.colType, self.isNotNull):
 
             if ttff == False: 
@@ -166,29 +150,15 @@ class VLR:
                 continue # null 이면 아무것도 하지 말기
                 
             if coltype[0] == 'c' :
-                # print(self.value)
                 self.value.append(self.vlr[record_pointer: record_pointer + int(coltype[1:])].decode('utf-8'))
-                # value_index+=1
                 record_pointer += int(coltype[1:])
             elif coltype[0] == 'v':
                 stpt = int.from_bytes(self.vlr[record_pointer : record_pointer + OFFSET//2],'big')
                 length = int.from_bytes(self.vlr[record_pointer + OFFSET//2: record_pointer + OFFSET],'big')
                 
                 self.value.append(self.vlr[stpt:stpt + length].decode('utf-8'))
-
-                # value_index +=1
                 record_pointer += OFFSET
 
-
-            # print(bitmap)
-            # print(coltype)
-            
-
-
-
-
-
-    # ============================================       
     def checkNull(self, insert_columns):
         null_bitmap_string = ['0','0','0','0','0','0','0','0']
         for i,ins in enumerate(reversed(insert_columns)):
@@ -203,12 +173,6 @@ class VLR:
 
         return bitmap_number , ptf
 
-    
-
-    def getVLR(self): # VLR의 정보 가져오는 것
-        
-        pass
-
     def printVLR(self): # VLR의 정보 prints
         print(f'bytearray : {self.vlr}')
         print(f'bytearray length : {len(self.vlr)}')
@@ -220,7 +184,6 @@ class VLR:
         print(f'colName : {self.colName}')
         print(f'value : {self.value}')
         
-
 
 # ============================================================= # 
 '''
@@ -246,6 +209,7 @@ class SLP:
         self.freespaceStart = 10 # 이게 10이라는 건 아무것도 없다는 것
         self.freespaceEnd = SLP_LENGTH 
         self.frespaceRemain = self.freespaceEnd - self.freespaceStart
+        print(self.freespaceStart,self.freespaceEnd,self.frespaceRemain)
  
     def getSLP(self, tableName : str, slotNum : int):
         directory = os.getcwd() + '/table/' + tableName

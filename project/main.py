@@ -1,4 +1,3 @@
-import os, sys
 from API import *
 from structure import *
 
@@ -60,28 +59,37 @@ if __name__ == '__main__':
     # query = 'select name from student where name = \'dain\''
 
 
-     # 기능 1
-    # createTable(table_name,col_names,col_types) 
+    # # 기능 1
+    createTable(table_name,col_names,col_types) 
     # # 현재 3개 inserted
-    # insert_columns = ['20194653', 'dain', '1', 'sci']
-    # insertColumn(table_name, insert_columns)
-    # insert_columns = ['20192019', 'yoon', '6', 'null'] # grade 값이 null
-    # insertColumn(table_name, insert_columns)
-    # insert_columns = ['20194653', 'YDI', '1', 'sci']
-    # insertColumn(table_name, insert_columns)
+    insert_columns = ['20194653', 'dain', '1', 'sci']
+    insertColumn(table_name, insert_columns)
+    insert_columns = ['00000000', 'yoon', '3', 'null'] # grade 값이 null
+    insertColumn(table_name, insert_columns)
+    insert_columns = ['20194653', 'YDI', '1', 'sci']
+    insertColumn(table_name, insert_columns)
+
+
+    # =======
+
+    insert_columns = ['12345678', 'my name', '4', 'math']
+    insertColumn(table_name, insert_columns)
 
 
 
-    # testslp.getSLP(table_name,1)
-    # testslp.printSLP()
-    # print('\n')
+    testslp.getSLP(table_name,1)
+    testslp.printSLP()
+    print('\n')
+    testslp.getSLP(table_name,2)
+    testslp.printSLP()
+    print('\n')
 
 
-    res = findRecord(select = 'name', 
-                    tableName = table_name,  
-                    where = 'dept', 
-                    target = 'sci')
-    if (len(res) == 0) : print('query not found')
+    # res = findRecord(select = 'name', 
+    #                 tableName = table_name,  
+    #                 where = 'dept', 
+    #                 target = 'sci')
+    # if (len(res) == 0) : print('query not found')
 
     # insert_columns = ['20194653', 'dain', '1', 'sci']
     # testvlr = VLR()
