@@ -183,19 +183,14 @@ class VLR:
         print(f'colType : {self.colType}')
         print(f'colName : {self.colName}')
         print(f'value : {self.value}')
-        
-
 # ============================================================= # 
 '''
-SLP : 하나의 크기 1000bytes 
+SLP : 하나의 크기 100bytes 
 '''
 SLP_LENGTH = 100
 END_OF_SLP = 100
 
 EACH_HEADER_SIZE = 3
-# ENTRY_SIZE = 5
-# PAGE_SIZE = 1000
-# ----
 
 class SLP:
     def __init__(self):
@@ -227,19 +222,7 @@ class SLP:
         print(f'freespace start : {self.freespaceStart}')
         print(f'freespace end : {self.freespaceEnd}')
         print(f'freespace remain : {self.frespaceRemain}')
-
-
-        
-        
-
-    # def __init__(self,tableName: str, record : VLR):
-    #     self.slp = bytearray(SLP_LENGTH)
-        
-
-
-
-    #     pass
-
+   
 # ============================================================= # 
 
 '''
