@@ -1,7 +1,8 @@
 
 import os, sys
+from tkinter import OFF
 
-from numpy import byte
+from numpy import byte, record
 
 
 OFFSET = 4
@@ -22,8 +23,9 @@ class VLR:
     def __init__(self):
         self.vlr = bytearray(VLR_LENGTH)
         self.tableName = ''
+
         self.nullbitmap = ''
-        self.isNull=[]
+        self.isNotNull=[] # 이 두개는 중복정보긴 함
 
         self.colType = [] #
         self.colName = []
@@ -128,18 +130,59 @@ class VLR:
         self.vlr = bitmap # 이 bitmap으로 초기화
 
     def makeVLR_bytearray(self, bytes, tableName):
+        
         metadata = dataDict()
         metadata.getDict(tableName)
-        
+        self.vlr = bytes
         self.colType = metadata.colType
         self.colName = metadata.colName
 
-        null_bitmap = bytes[0:1]
-        null_int = int.from_bytes(null_bitmap,'big')
-        null_check_str = ('{0:08b}'.format(null_int)) # 길이가 8인 스트링 
-        null_check = ('{0:08b}'.format(null_int))[len(null_check_str) - len(metadata.colType) + col_index]
-        print(null_check_str)
-        print(f'null check : {null_check}')
+        # null 값 확인
+        null_int = int.from_bytes(bytes[0:1],'big') 
+        null_check_str = ('{0:08b}'.format(null_int))[-len(metadata.colType):] # 길이가 8인 스트링 
+        self.nullbitmap = null_check_str
+        # null_check = ('{0:08b}'.format(null_int))[len(null_check_str) - len(metadata.colType) + col_index]
+        #print(null_check_str)
+        #print(f'null check : {null_check}')
+        self.isNotNull = list(map(mapping, null_check_str))
+        #print(self.isNotNull)
+        
+        # value 에 대응하는 값을 넣으면 됨
+        
+        # self.printVLR()
+
+        '''
+        vlr의 byte array와 null 정보로 value를 string으로 가져오기
+        '''
+        record_pointer = 1 # null부터 시작
+        
+        #value_index = 0 
+
+        print(self.vlr)
+        for coltype, ttff in zip(self.colType, self.isNotNull):
+
+            if ttff == False: 
+                self.value.append('null')
+                continue # null 이면 아무것도 하지 말기
+                
+            if coltype[0] == 'c' :
+                # print(self.value)
+                self.value.append(self.vlr[record_pointer: record_pointer + int(coltype[1:])].decode('utf-8'))
+                # value_index+=1
+                record_pointer += int(coltype[1:])
+            elif coltype[0] == 'v':
+                stpt = int.from_bytes(self.vlr[record_pointer : record_pointer + OFFSET//2],'big')
+                length = int.from_bytes(self.vlr[record_pointer + OFFSET//2: record_pointer + OFFSET],'big')
+                
+                self.value.append(self.vlr[stpt:stpt + length].decode('utf-8'))
+
+                # value_index +=1
+                record_pointer += OFFSET
+
+
+            # print(bitmap)
+            # print(coltype)
+            
 
 
 
@@ -160,18 +203,22 @@ class VLR:
 
         return bitmap_number , ptf
 
+    
+
     def getVLR(self): # VLR의 정보 가져오는 것
         
         pass
+
     def printVLR(self): # VLR의 정보 prints
         print(f'bytearray : {self.vlr}')
         print(f'bytearray length : {len(self.vlr)}')
 
         print(f'null bit map : {self.nullbitmap}')
-        print(f'coltype : {self.colType}')
-        print(f'coltype : {self.isNull}')
-        print(f'coltype : {self.colType}')
-        print(f'coltype : {self.value}')
+        print(f'is not null : {self.isNotNull}')
+
+        print(f'colType : {self.colType}')
+        print(f'colName : {self.colName}')
+        print(f'value : {self.value}')
         
 
 

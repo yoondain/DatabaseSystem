@@ -16,8 +16,7 @@ if __name__ == '__main__':
 
 
     
-    # # 기능 1
-    # createTable(table_name,col_names,col_types) 
+   
 
     # # testslp.getSLP(table_name,1)
     # # testslp.printSLP()
@@ -58,18 +57,20 @@ if __name__ == '__main__':
     #     print(bytearray(f.read()))
     
 
-    query = 'select name from student where name = \'dain\''
+    # query = 'select name from student where name = \'dain\''
 
 
-
-    # 현재 3개 inserted
+     # 기능 1
+    # createTable(table_name,col_names,col_types) 
+    # # 현재 3개 inserted
     # insert_columns = ['20194653', 'dain', '1', 'sci']
-    # #testvlr = VLR(table_name,insert_columns)
     # insertColumn(table_name, insert_columns)
-    # insert_columns = ['20192019', 'yoon', '6', 'bio'] # grade 값이 null
+    # insert_columns = ['20192019', 'yoon', '6', 'null'] # grade 값이 null
     # insertColumn(table_name, insert_columns)
     # insert_columns = ['20194653', 'YDI', '1', 'sci']
     # insertColumn(table_name, insert_columns)
+
+
 
     # testslp.getSLP(table_name,1)
     # testslp.printSLP()
@@ -82,4 +83,10 @@ if __name__ == '__main__':
                     target = 'sci')
     if (len(res) == 0) : print('query not found')
 
-    
+    # insert_columns = ['20194653', 'dain', '1', 'sci']
+    # testvlr = VLR()
+    # testvlr.makeVLR(table_name,insert_columns)
+
+    # tempbytearr = VLR()
+    # tempbytearr.makeVLR_bytearray(testvlr.vlr,table_name)
+    # tempbytearr.printVLR()
