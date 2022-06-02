@@ -122,7 +122,7 @@ def findRecord(select : str, tableName : str,  where  : str, target : str):
                                         (2* EACH_HEADER_SIZE) * i + EACH_HEADER_SIZE+ EACH_HEADER_SIZE],'big')
             record = tempslp.slp[recordStartPoint:recordStartPoint+recordLength] # slot_num 번째의 i 번째 record
             '''
-            꺼낸 record bytearray를 VLR로 만들어 정보 가져오기
+            2. 꺼낸 record bytearray를 VLR로 만들어 정보 가져오기
             '''
             # ================== class 사용 ============
             SLPrecord = VLR()
@@ -131,90 +131,13 @@ def findRecord(select : str, tableName : str,  where  : str, target : str):
         
             # print(SLPrecord.value[where_index])
             # print(SLPrecord.isNotNull)
-
+            '''
+            3. target 값 비교
+            '''
             if SLPrecord.isNotNull[where_index] != False and SLPrecord.value[where_index] == target:
                 if select_index == -1: result_vlr.append(SLPrecord.value)
                 else: result_vlr.append(SLPrecord.value[select_index])
                     
-                
-            
-
-
-            # ================= 하드코딩
-            # '''
-            # 2. null bitmap 확인 ==> 해당 column에 대응하는 값이 0인지 아닌지
-            # '''
-            # null_bitmap = record[0:1]
-            # null_int = int.from_bytes(null_bitmap,'big')
-            # null_check_str = ('{0:08b}'.format(null_int)) # 길이가 8인 스트링 
-            # null_check = ('{0:08b}'.format(null_int))[len(null_check_str) - len(metadata.colType) + col_index]
-            # print(null_check_str[len(null_check_str) - len(metadata.colType):])
-            # # [- len(metadata.colType):]
-            # print(f'null check : {null_check}')
-
-            # if null_check == '1' : 
-            #     #print('null')
-            #     continue # null이면 찾을 필요 없음
-            # else : # 해당 record가 null이 아닐 때 
-            #     print('not null')
-
-
-            # '''
-            # 3. record 검사
-            # '''
-            # null bitmap도 함께 생각해야함 null이면 계산하면 안됨
-            
-            
-
-            # for i in range(0,col_index):
-            #     if null_check_str[-1-i] == '1': continue
-            #     if metadata.colType[i][0] == 'c' and null_check_str[len(null_check_str) - len(metadata.colType) + i] == '0':
-            #         record_pointer += int(metadata.colType[i][1:])
-            #     elif metadata.colType[i][0] == 'v' and null_check_str[len(null_check_str) - len(metadata.colType) + i] == '0':
-            #         record_pointer += OFFSET
-
-            # if  metadata.colType[col_index][0] == 'c' : 
-            #     # 조건과 비교할 값 check_value
-            #     check_value = record[record_pointer:record_pointer+int(metadata.colType[col_index][1:])]
-            #     # print('---start check---')
-            #     # print(record_pointer)
-            #     # print(target)
-            #     # print(check_value)
-            #     # print(check_value.decode('utf-8'))
-            #     # print(int.from_bytes(check_value,'big'))
-            #     # print(target == check_value.decode('utf-8'))
-            #     # print('---end check---')
-            #     if target == check_value.decode('utf-8') :
-            #         result_vlr.append(record)
-
-
-            # elif metadata.colType[col_index][0] == 'v':
-            #     # print(type(record[record_pointer : record_pointer + OFFSET//2]))
-            #     stpt = int.from_bytes(record[record_pointer : record_pointer + OFFSET//2],'big')
-            #     length = int.from_bytes(record[record_pointer + OFFSET//2: record_pointer + OFFSET],'big')
-            #     # 조건과 비교할 값 check_value
-            #     check_value = record[stpt:stpt + length]
-            #     print("!!!!!!!!!!val")
-            #     print(target)
-            #     print(check_value.decode('utf-8'))
-            #     print(target == check_value.decode('utf-8'))
-            #     if target == check_value.decode('utf-8') :
-            #         result_vlr.append(record)
-
-
-
-            # if col_type[0] == 'c': # char
-            #     for ct in metadata.colType:
-            #         if ct[0] == 'c' : record_pointer+=int(ct[1:])
-            #         elif ct[0] == 'v': record_pointer +=4
-
-            #     pass
-
-            # elif col_type[0] == 'v': # varchar
-
-            #     pass
-
-            # print(f'record index : {record_pointer}')
                 
     print(f'record 개수 : {len(result_vlr)} , {result_vlr}')           
     return result_vlr
