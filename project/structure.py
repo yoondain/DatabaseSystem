@@ -1,10 +1,7 @@
 
 import os, sys
 
-from charset_normalizer import from_bytes
-
-
-
+from numpy import byte
 
 
 OFFSET = 4
@@ -22,7 +19,20 @@ VLR : 최대 길이 40 bytes
 VLR_LENGTH = 40
 
 class VLR:
-    def __init__(self, tableName, insert_columns):
+    def __init__(self):
+        self.vlr = bytearray(VLR_LENGTH)
+        self.tableName = ''
+        self.nullbitmap = ''
+        self.isNull=[]
+
+        self.colType = [] #
+        self.colName = []
+        self.value = []
+
+        print('make new VLR')
+        
+
+    def makeVLR(self, tableName, insert_columns): # table이랑 insert colum이랑 
         meta_data = dataDict()
         meta_data.getDict(tableName)
         col_type = meta_data.colType # c인지 v인지
@@ -117,6 +127,23 @@ class VLR:
 
         self.vlr = bitmap # 이 bitmap으로 초기화
 
+    def makeVLR_bytearray(self, bytes, tableName):
+        metadata = dataDict()
+        metadata.getDict(tableName)
+        
+        self.colType = metadata.colType
+        self.colName = metadata.colName
+
+        null_bitmap = bytes[0:1]
+        null_int = int.from_bytes(null_bitmap,'big')
+        null_check_str = ('{0:08b}'.format(null_int)) # 길이가 8인 스트링 
+        null_check = ('{0:08b}'.format(null_int))[len(null_check_str) - len(metadata.colType) + col_index]
+        print(null_check_str)
+        print(f'null check : {null_check}')
+
+
+
+
 
     # ============================================       
     def checkNull(self, insert_columns):
@@ -133,9 +160,19 @@ class VLR:
 
         return bitmap_number , ptf
 
+    def getVLR(self): # VLR의 정보 가져오는 것
+        
+        pass
+    def printVLR(self): # VLR의 정보 prints
+        print(f'bytearray : {self.vlr}')
+        print(f'bytearray length : {len(self.vlr)}')
 
-
-
+        print(f'null bit map : {self.nullbitmap}')
+        print(f'coltype : {self.colType}')
+        print(f'coltype : {self.isNull}')
+        print(f'coltype : {self.colType}')
+        print(f'coltype : {self.value}')
+        
 
 
 # ============================================================= # 
