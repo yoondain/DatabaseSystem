@@ -1,22 +1,22 @@
 from structure import *
 
 # =====================================================
-def createTable(tableName:str, col_name : list, col_type:list):
+def createTable(table_name:str, col_name : list, col_type:list):
     metadata = dataDict()
-    metadata.makeDict(tableName,col_name, col_type)
+    metadata.makeDict(table_name,col_name, col_type)
 
 # =====================================================
-def insertColumn(tableName:str, col_name : list):
+def insertRecord(table_name:str, col_name : list):
     metadata = dataDict()
-    metadata.getDict(tableName)
+    metadata.getDict(table_name)
     slotnum = metadata.slotNum
     print(f'now slot num : {slotnum}')
-    directory = os.getcwd() + '/table/' + tableName
+    directory = os.getcwd() + '/table/' + table_name
 
     record = VLR()
-    record.makeVLR(tableName, col_name)
+    record.makeVLR(table_name, col_name)
     # print(f'new insert record :{record.vlr}')
-    # record = VLR(tableName, col_name)
+    # record = VLR(table_name, col_name)
     # print('lenlen:   '+str(len(record.vlr)))
 
     updateSlot = False
@@ -44,14 +44,14 @@ def insertColumn(tableName:str, col_name : list):
         updateRecord = True
 
     else: # 하나라도 있을 때
-        
-        newslp.getSLP(tableName, slotnum) # 가장 마지막에 있는 slot 가져온다
+        newslp = SLP()
+        newslp.getSLP(table_name, slotnum) # 가장 마지막에 있는 slot 가져온다
         if newslp.frespaceRemain < len(record.vlr): # 길이 부족하면
             newSLotNum = slotnum + 1
             '''
             ☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆slot 새로 만들어야함 그리고 삽입☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆
             '''
-            # slp 초기화
+            # slp 초기화 새로 만들어야 하므로!
             newslp = SLP()
             # 개수 update
             newslp.slp[0:EACH_HEADER_SIZE] = (1).to_bytes(EACH_HEADER_SIZE, 'big') # 새로 만든 slp의 record 개수 1개가 됨
@@ -97,13 +97,13 @@ def insertColumn(tableName:str, col_name : list):
     with open(directory + '/slot' + str(newSLotNum)+ '.bin', 'wb+') as f:
         f.write(newslp.slp)
 
-    metadata.updateDict(tableName, updateSlot, updateRecord ) # meta data update
+    metadata.updateDict(table_name, updateSlot, updateRecord ) # meta data update
 
 # =====================================================
-def findRecord(select : str, tableName : str,  where  : str, target : str):
+def findRecord(select : str, table_name : str,  where  : str, target : str):
     print(where, target)
     metadata = dataDict()
-    metadata.getDict(tableName)
+    metadata.getDict(table_name)
     result_vlr = [] # return 할 최종 값
 
     # metadata col_name에서 몇번째의 col 값인지 확인해야함
@@ -129,7 +129,7 @@ def findRecord(select : str, tableName : str,  where  : str, target : str):
     for slot_num in range(1,metadata.slotNum+1): # 있는 slp 전부 확인
         print(f'{slot_num}th SLP')
         tempslp = SLP()
-        tempslp.getSLP(tableName, slot_num) # slot 불러오기
+        tempslp.getSLP(table_name, slot_num) # slot 불러오기
         for i in range(1, tempslp.recordNum + 1): # slot에 있는 record(vlr)를 하나씩 꺼내기
             '''
             1. record 꺼내기
@@ -144,7 +144,7 @@ def findRecord(select : str, tableName : str,  where  : str, target : str):
             '''
             # ================== class 사용 ============
             SLPrecord = VLR()
-            SLPrecord.makeVLR_bytearray(record, tableName) # 1에 해당하는 record를 만드는 것  
+            SLPrecord.makeVLR_bytearray(record, table_name) # 1에 해당하는 record를 만드는 것  
             #SLPrecord.printVLR()
         
             # print(SLPrecord.value[where_index])
@@ -161,7 +161,7 @@ def findRecord(select : str, tableName : str,  where  : str, target : str):
     return result_vlr
             
 # =====================================================
-def findColumn(tableName: str):
+def findColumn(table_name: str):
     meta_data = dataDict()
-    meta_data.getDict(tableName)
+    meta_data.getDict(table_name)
     return meta_data.colName

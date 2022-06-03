@@ -188,8 +188,6 @@ class VLR:
 SLP : 하나의 크기 100bytes 
 '''
 SLP_LENGTH = 100
-END_OF_SLP = 100
-
 EACH_HEADER_SIZE = 3
 
 class SLP:
