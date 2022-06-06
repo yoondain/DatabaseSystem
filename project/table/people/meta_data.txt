@@ -1,0 +1,5 @@
+people
+ID/name/grade/dept/age
+c8/v16/c1/v15/c2
+1
+3
