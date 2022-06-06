@@ -8,11 +8,12 @@ def mapping(x):
     if x == '0' : return True
     else: return False
 
-# ============================================================= # 
+# ============================================================= #
+#  
 '''
-VLR : 최대 길이 40 bytes
+VLR : 최대 길이 42 bytes
 '''
-VLR_LENGTH = 40
+VLR_LENGTH = 42
 
 class VLR:
     def __init__(self):
@@ -26,22 +27,17 @@ class VLR:
         self.colName = []
         self.value = []
 
-        print('make new VLR')
+        #print('make new VLR')
 
-    def makeVLR(self, tableName, insert_columns): # table이랑 insert colum이랑 
+    def makeVLR(self, tableName:str, insert_columns:list): # table이랑 insert colum이랑 
         meta_data = dataDict()
         meta_data.getDict(tableName)
         col_type = meta_data.colType # c인지 v인지
 
-        '''
         # =========== null bitmap 에 들어갈 숫자 int 형으로 / null인지 아닌지 bool type의 list
-        '''
         null_bitmap, tf = self.checkNull(insert_columns)
-        # print(tf)
 
-        '''
         # =========== 필요한 숫자 추출 ex) offset 시작 위치 //null값 
-        '''
         varstart = 1 
         numNeed = [0]
         for coltype, insertcol, ttff in zip(col_type, insert_columns,tf):
@@ -54,22 +50,15 @@ class VLR:
         total_length = sum(numNeed)
         # print(total_length)
 
-        '''
         # =========== self init 할 byte를 totel_length 만큼 할당 
-        '''
         bitmap = bytearray(total_length)
         bitmap[0:1] = null_bitmap.to_bytes(1,'big')
         
-        '''
         # =========== null bitmap 제외한 [1:] 정보 저장
-        '''
         numNeedNum = 1
         bit_start = 1
-        # print('bitmap')
 
-
-        ### null check 해야함 --> return 된 tf bool 리스트가지고
-        # print(f'bitmap length : {len(bitmap)}' )
+        # null check 해야함 --> return 된 tf bool 리스트가지고
         for coltype, insertcol, ttff in zip(col_type, insert_columns , tf):
 
             if ttff == False: continue # null 이면 아무것도 하지 말기
@@ -82,46 +71,18 @@ class VLR:
             elif coltype[0] == 'v':
                 start = numNeed[0]
                 vvarlength = numNeed[numNeedNum]
-                # print(vvarlength)
                 bitmap[bit_start : bit_start + OFFSET//2] =  start.to_bytes(2,'big') # 시작하는 곳
                 bitmap[bit_start + OFFSET//2 : bit_start + OFFSET] =  vvarlength.to_bytes(2,'big') # 변수 길이
-                # print(bitmap[bit_start:bit_start + OFFSET])
 
                 bitmap[start : start+ vvarlength] = bytearray(insertcol, encoding='UTF-8') # 뒤쪽에 정보 저장
 
                 numNeed[0] += vvarlength
                 numNeedNum += 1
                 bit_start += OFFSET
-            # print(bitmap)
-            # print(coltype)
-            
-
-
-
-
-        
-        # print(bitmap[0])
-        print(f'final bitmap: {bitmap} bitmap length : {len(bitmap)}')
-        # print(bitmap[0:1]) # null
-
-        # print(bitmap[1:6].decode()) # id
-        # print(bitmap[6:10]) # offset - name
-        # print(bitmap[10:11].decode()) # grade
-        # print(bitmap[11:15]) # offset - dept
-
-        # print(bitmap[15:19].decode()) # name
-        # print(bitmap[19:].decode()) # dept
-        # print(bitmap)
-        # a = bitmap.decode()
-        # print(len(bitmap))
-        # print(a)
-
-        # print(insert_columns)
-        # print(col_type)
-
-
 
         self.vlr = bitmap # 이 bitmap으로 초기화
+
+
 
     def makeVLR_bytearray(self, bytes, tableName):
         
@@ -159,6 +120,10 @@ class VLR:
                 self.value.append(self.vlr[stpt:stpt + length].decode('utf-8'))
                 record_pointer += OFFSET
 
+
+
+
+
     def checkNull(self, insert_columns):
         null_bitmap_string = ['0','0','0','0','0','0','0','0']
         for i,ins in enumerate(reversed(insert_columns)):
@@ -173,7 +138,9 @@ class VLR:
 
         return bitmap_number , ptf
 
-    def printVLR(self): # VLR의 정보 prints
+
+
+    def printVLR(self): # VLR의 정보 print
         print(f'bytearray : {self.vlr}')
         print(f'bytearray length : {len(self.vlr)}')
 
@@ -183,6 +150,7 @@ class VLR:
         print(f'colType : {self.colType}')
         print(f'colName : {self.colName}')
         print(f'value : {self.value}')
+
 # ============================================================= # 
 '''
 SLP : 하나의 크기 100bytes 
@@ -195,14 +163,15 @@ class SLP:
         bytemap = bytearray(SLP_LENGTH)
         # print(f'bytemap : {bytemap[:10]}, length : {len(bytemap)}')
         bytemap[0:EACH_HEADER_SIZE] = (0).to_bytes(EACH_HEADER_SIZE, 'big') # record 개수는 0으로 초기화
-        bytemap[EACH_HEADER_SIZE: EACH_HEADER_SIZE*2] = (10).to_bytes(EACH_HEADER_SIZE,'big') # free  space의 start
+        bytemap[EACH_HEADER_SIZE: 
+                EACH_HEADER_SIZE*2] = (10).to_bytes(EACH_HEADER_SIZE,'big') # free  space의 start
         
         self.slp = bytemap
         self.recordNum = 0
         self.freespaceStart = 10 # 이게 10이라는 건 아무것도 없다는 것
         self.freespaceEnd = SLP_LENGTH 
         self.frespaceRemain = self.freespaceEnd - self.freespaceStart
-        print(self.freespaceStart,self.freespaceEnd,self.frespaceRemain)
+        #print(self.freespaceStart,self.freespaceEnd,self.frespaceRemain)
  
     def getSLP(self, tableName : str, slotNum : int):
         directory = os.getcwd() + '/table/' + tableName
@@ -212,8 +181,10 @@ class SLP:
             #print(self.slp)
         self.recordNum = int.from_bytes(self.slp[0:EACH_HEADER_SIZE],'big')
         self.freespaceStart = int.from_bytes(self.slp[EACH_HEADER_SIZE:2*EACH_HEADER_SIZE],'big')
-        self.freespaceEnd = int.from_bytes(self.slp[2*EACH_HEADER_SIZE * self.recordNum :2*EACH_HEADER_SIZE * self.recordNum + EACH_HEADER_SIZE],'big')
+        self.freespaceEnd = int.from_bytes(self.slp[2*EACH_HEADER_SIZE * self.recordNum :
+                            2*EACH_HEADER_SIZE * self.recordNum + EACH_HEADER_SIZE],'big')
         self.frespaceRemain = self.freespaceEnd - self.freespaceStart
+
 
     def printSLP(self):
         print(f'record num : {self.recordNum}')
@@ -237,18 +208,12 @@ class dataDict:
     def makeDict(self, table_name:str, col_name: list, col_type:list):
         directory = os.getcwd() + '/table/' + table_name
         try:
-            if not os.path.exists(directory):
-                # print('make')
-                os.makedirs(directory)
-            else:
-                pass
-                #print(f'\"{tableName}\" table already exists')
-                # exit()
+            if not os.path.exists(directory): os.makedirs(directory)
+            else: pass
         except OSError:
             print(r'Error: Creating directory. ' +  directory)
             exit()
 
-        
         # meta data write
         with open(directory + '/meta_data.txt', 'w+') as f:
             f.write(table_name+'\n')
@@ -261,6 +226,7 @@ class dataDict:
                 if q != len(col_type)-1: f.write('/')
             f.write('\n0') # total slot 개수
             f.write('\n0') # total record 개수
+
 
     def printDict(self):
         print(f'table name : {self.tableName}')

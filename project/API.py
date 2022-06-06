@@ -10,20 +10,17 @@ def insertRecord(table_name:str, col_name : list):
     metadata = dataDict()
     metadata.getDict(table_name)
     slotnum = metadata.slotNum
-    print(f'now slot num : {slotnum}')
+    #print(f'now slot num : {slotnum}')
     directory = os.getcwd() + '/table/' + table_name
 
     record = VLR()
     record.makeVLR(table_name, col_name)
-    # print(f'new insert record :{record.vlr}')
-    # record = VLR(table_name, col_name)
-    # print('lenlen:   '+str(len(record.vlr)))
+    # record.printVLR()
 
     updateSlot = False
     updateRecord = False
-    
     newSLotNum = 0
-
+    newslp = SLP()
     if slotnum == 0 : # 해당 table에 slot이 아예 존재하지 않을 때 -> 새로 1개를 만들어야 한다
         newSLotNum = 1
         # slp 초기화
@@ -44,8 +41,9 @@ def insertRecord(table_name:str, col_name : list):
         updateRecord = True
 
     else: # 하나라도 있을 때
-        newslp = SLP()
+        # newslp = SLP()
         newslp.getSLP(table_name, slotnum) # 가장 마지막에 있는 slot 가져온다
+        
         if newslp.frespaceRemain < len(record.vlr): # 길이 부족하면
             newSLotNum = slotnum + 1
             '''
@@ -67,41 +65,37 @@ def insertRecord(table_name:str, col_name : list):
             updateSlot = True
             updateRecord = True
             pass
-        else:
+        else: # record가 들어갈 자리가 충분히 있다면 load한 slp에 record 넣으면 됨
             newSLotNum = slotnum 
             # 개수 update done
             newslp.slp[0:EACH_HEADER_SIZE] = (newslp.recordNum+1).to_bytes(EACH_HEADER_SIZE, 'big') # record 개수 + 1 해서 저장
             # start of freespace UPDATE done
             newslp.slp[EACH_HEADER_SIZE: EACH_HEADER_SIZE*2] = ( 2 * EACH_HEADER_SIZE * (newslp.recordNum + 2 ) ).to_bytes(EACH_HEADER_SIZE,'big') # free space 시작
-
-
-
             # 새로운 record 삽입 done
             newslp.slp[newslp.freespaceEnd-len(record.vlr):newslp.freespaceEnd] = record.vlr
-
             # 삽입한 record의 offset - 시작위치 알려주는
             newslp.freespaceEnd -= len(record.vlr)
-            newslp.slp[EACH_HEADER_SIZE*2 * (newslp.recordNum+1) : EACH_HEADER_SIZE*2 * (newslp.recordNum+1) + EACH_HEADER_SIZE] = (newslp.freespaceEnd).to_bytes(EACH_HEADER_SIZE,'big')
+            newslp.slp[EACH_HEADER_SIZE*2 * (newslp.recordNum+1) : 
+                            EACH_HEADER_SIZE*2 * (newslp.recordNum+1) + EACH_HEADER_SIZE] = (newslp.freespaceEnd).to_bytes(EACH_HEADER_SIZE,'big')
             # 삽입한 record의 offset - length 알려줌
-            newslp.slp[EACH_HEADER_SIZE*2 * (newslp.recordNum+1) + EACH_HEADER_SIZE : EACH_HEADER_SIZE*2 * (newslp.recordNum+1) + EACH_HEADER_SIZE *2] = (len(record.vlr)).to_bytes(EACH_HEADER_SIZE,'big')
-
+            newslp.slp[EACH_HEADER_SIZE*2 * (newslp.recordNum+1) + EACH_HEADER_SIZE : 
+                            EACH_HEADER_SIZE*2 * (newslp.recordNum+1) + EACH_HEADER_SIZE *2] = (len(record.vlr)).to_bytes(EACH_HEADER_SIZE,'big')
             updateSlot = False
             updateRecord = True
             
-
-
-
-        pass
    
-    print(f'newly updated slp : {newslp.slp}')
+    # print(f'newly updated slp : {newslp.slp}')
     with open(directory + '/slot' + str(newSLotNum)+ '.bin', 'wb+') as f:
         f.write(newslp.slp)
 
     metadata.updateDict(table_name, updateSlot, updateRecord ) # meta data update
 
+
+
+
 # =====================================================
 def findRecord(select : str, table_name : str,  where  : str, target : str):
-    print(where, target)
+    #print(where, target)
     metadata = dataDict()
     metadata.getDict(table_name)
     result_vlr = [] # return 할 최종 값
@@ -122,12 +116,9 @@ def findRecord(select : str, table_name : str,  where  : str, target : str):
     if all(select) not in metadata.colName : return result_vlr # 하나라도 없으면 바로 return
     '''
 
-    print(f'target// | {where} = {target}\n')
-
-    
 
     for slot_num in range(1,metadata.slotNum+1): # 있는 slp 전부 확인
-        print(f'{slot_num}th SLP')
+        #print(f'{slot_num}th SLP')
         tempslp = SLP()
         tempslp.getSLP(table_name, slot_num) # slot 불러오기
         for i in range(1, tempslp.recordNum + 1): # slot에 있는 record(vlr)를 하나씩 꺼내기
@@ -145,10 +136,6 @@ def findRecord(select : str, table_name : str,  where  : str, target : str):
             # ================== class 사용 ============
             SLPrecord = VLR()
             SLPrecord.makeVLR_bytearray(record, table_name) # 1에 해당하는 record를 만드는 것  
-            #SLPrecord.printVLR()
-        
-            # print(SLPrecord.value[where_index])
-            # print(SLPrecord.isNotNull)
             '''
             3. target 값 비교
             '''
@@ -160,7 +147,12 @@ def findRecord(select : str, table_name : str,  where  : str, target : str):
     print(f'record 개수 : {len(result_vlr)} , {result_vlr}')           
     return result_vlr
             
-# =====================================================
+
+
+
+
+
+# ===================================================== 이거 어케하지.... 
 def findColumn(table_name: str):
     meta_data = dataDict()
     meta_data.getDict(table_name)
